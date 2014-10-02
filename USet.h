@@ -18,8 +18,8 @@ class USet {
   //Return the item with Key k. 
   // If there is no such item, throw an exception.
   virtual T find(Key k) = 0;
+
   //Return true if there is an item with Key k in the table. If not,
   // return false
   virtual bool keyExists(Key k) = 0;
-
 };
