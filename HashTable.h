@@ -80,19 +80,19 @@ public:
 //Date: 2 October 2014
 #include <string>
 
-HashTable<char,int> table; //?
+HashTable<char,int> table;
 
 template <class Key, class T>
-unsigned long hash(char c){ //?
-	return 10 * ((unsigned long)c) % backingArraySize; //?
+unsigned long HashTable<Key,T>::hash(char c){
+	return 10 * ((unsigned long)c) % backingArraySize;
 }
 
 template <class Key, class T>
 HashTable<Key,T>::HashTable(){
-	backingArray = new HashRecord(); //?
+	backingArray = new HashRecord();
 	numItems=0;
 	numRemoved=0;
-	backingArraySize=0;
+	backingArraySize=10;
 }
 
 template <class Key, class T>
@@ -103,26 +103,38 @@ HashTable<Key,T>::~HashTable() {
 template <class Key, class T>
 unsigned long HashTable<Key,T>::calcIndex(Key k){
 	
-	return numItems; //This indicates failure, since it is an impossible value
+	return numItems;
 }
 
 template <class Key, class T>
 void HashTable<Key,T>::add(Key k, T x){
+	unsigned long dex;
 	if (keyExists(k)) {
-		 //?
+		dex = calcIndex(k);
+		backingArray[dex].isDel = false;
+
 		return;
 	}
-	if ((numItems + numRemoved) >= (backingArraySize / 2))
-		grow();
+	else {
+		if ((numItems + numRemoved) >= (backingArraySize / 2))
+			grow();
 
+		backingArray[dex].k = k;
+		backingArray[dex].isNull = false;
+	}
+	
+	backingArray[dex].x = x;
 	numItems++;
 }
 
 template <class Key, class T>
 void HashTable<Key,T>::remove(Key k){
+	if (!(keyExists(k)))
+		return;
 
-	backingArray->isNull = false; //?
-	backingArray->isDel = true; //?
+	unsigned long dex = calcIndex(k);
+
+	backingArray[dex].isDel = true;
 	numItems--;
 	numRemoved++;
 }
@@ -139,8 +151,9 @@ T HashTable<Key,T>::find(Key k){
 
 template <class Key, class T>
 bool HashTable<Key,T>::keyExists(Key k){
-	
-	return false;
+	if (calcIndex(k) == numItems)
+		return false;
+	return true;
 }
 
 template <class Key, class T>
@@ -150,15 +163,12 @@ unsigned long HashTable<Key,T>::size(){
 
 template <class Key, class T>
 void HashTable<Key,T>::grow(){
-
-
-	/**T* myNewArray = new T[backingArraySize * 2];
+	T* myNewArray = new T[backingArraySize * 2];
 
 	for(unsigned int i = 0; i < backingArraySize; i++)
-		myNewArray[i] = backingArray[(i + front) % backingArraySize];
+		myNewArray[i] = backingArray[i];
 	
-	front = 0;
 	backingArraySize *= 2;
 	delete[] backingArray;
-	backingArray = myNewArray;**/
+	backingArray = myNewArray;
 }
