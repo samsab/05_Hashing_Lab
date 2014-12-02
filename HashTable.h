@@ -96,24 +96,35 @@ HashTable<Key,T>::~HashTable() {
 template <class Key, class T>
 unsigned long HashTable<Key,T>::calcIndex(Key k){
 	for (unsigned long i = hash(k); true; i++)
-		if (backingArray[i % backingArraySize].k == k || backingArray[i % backingArraySize].isNull)
+		if ((backingArray[i % backingArraySize].k == k && !(backingArray[i % backingArraySize].isDel)) || backingArray[i % backingArraySize].isNull)
 			return (i % backingArraySize);
 	return numItems;
 }
 
 template <class Key, class T>
 void HashTable<Key,T>::add(Key k, T x){
-	if ((numItems + numRemoved) >= backingArraySize / 2)
-		grow();
-
 	unsigned long dex = hash(k);
-	for (dex; true; dex++) {
-		if (backingArray[dex % backingArraySize].isNull || backingArray[dex % backingArraySize].k == k || backingArray[dex % backingArraySize].isDel){
-			dex = (dex % backingArraySize);
-			break;
+
+	if (keyExists(k)) {
+		for (dex; true; dex++) {
+			if (backingArray[dex % backingArraySize].k == k){
+				dex = (dex % backingArraySize);
+				numRemoved--;
+				break;
+			}
+		}
+	} else {
+		if ((numItems + numRemoved) >= backingArraySize / 2)
+			grow();
+
+		for (dex; true; dex++) {
+			if (backingArray[dex % backingArraySize].isNull || backingArray[dex % backingArraySize].k == k || backingArray[dex % backingArraySize].isDel){
+				dex = (dex % backingArraySize);
+				break;
+			}
 		}
 	}
-
+	
 	backingArray[dex].k = k;
 	backingArray[dex].x = x;
 	backingArray[dex].isNull = false;
@@ -141,14 +152,14 @@ T HashTable<Key,T>::find(Key k){
 template <class Key, class T>
 bool HashTable<Key,T>::keyExists(Key k){
 	unsigned long dex = calcIndex(k);
-	if (backingArray[dex].k == k && !backingArray[dex].isDel)
+	if (backingArray[dex].k == k && !backingArray[dex].isDel && !backingArray[dex].isNull)
 		return false;
 	return true;
 }
 
 template <class Key, class T>
 unsigned long HashTable<Key,T>::size(){
-	return numItems + numRemoved;
+	return numItems;
 }
 
 template <class Key, class T>
